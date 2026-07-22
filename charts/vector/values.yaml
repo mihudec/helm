@@ -1,0 +1,56 @@
+replicaCount: 1
+
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxUnavailable: 0
+    maxSurge: 1
+
+image:
+  repository: timberio/vector
+  tag: 0.57.0-debian
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext: {}
+securityContext: {}
+
+resources: {}
+
+env:
+  TZ: Europe/Prague
+
+envConfig:
+  VECTOR_CONFIG_DIR: /vector/config
+  VECTOR_SCRIPTS_DIR: /vector/scripts
+  VECTOR_ENRICHMENTS_DIR: /vector/enrichments
+
+secretEnv: {}
+config:
+  vector.yaml: |
+    # Set global options
+    data_dir: "/var/lib/vector"
+
+    # Vector's API
+    # Enabled for Kubernetes health probes and `vector top`.
+    api:
+      enabled: true
+      address: "0.0.0.0:8686"
+    timezone: "${TZ:-local}"
+scripts: {}
+enrichments: {}
+
+nodeSelector: {}
+tolerations: []
+affinity: null
+podAntiAffinity:
+  enabled: true
+  type: preferred
+  weight: 100
+  topologyKey: kubernetes.io/hostname
