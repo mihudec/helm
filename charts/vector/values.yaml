@@ -31,7 +31,12 @@ envConfig:
   VECTOR_SCRIPTS_DIR: /vector/scripts
   VECTOR_ENRICHMENTS_DIR: /vector/enrichments
 
+envSecret:
+  create: true
+  existingName: ""
+
 secretEnv: {}
+secretEnvData: {}
 
 configMap:
   create: true
@@ -60,6 +65,9 @@ enrichmentsConfigMap:
   existingName: ""
 
 enrichments: {}
+
+volumeMounts: []
+volumes: []
 
 nodeSelector: {}
 tolerations: []

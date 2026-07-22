@@ -6,6 +6,7 @@ metadata:
     {{- include "vector.labels" . | nindent 4 }}
 data:
   {{- toYaml .Values.envConfig | nindent 2 }}
+{{- if .Values.envSecret.create }}
 ---
 apiVersion: v1
 kind: Secret
@@ -14,8 +15,18 @@ metadata:
   labels:
     {{- include "vector.labels" . | nindent 4 }}
 type: Opaque
+{{- if .Values.secretEnvData }}
 data:
+  {{- toYaml .Values.secretEnvData | nindent 2 }}
+{{- end }}
+{{- if .Values.secretEnv }}
+stringData:
   {{- toYaml .Values.secretEnv | nindent 2 }}
+{{- end }}
+{{- if and (not .Values.secretEnv) (not .Values.secretEnvData) }}
+data: {}
+{{- end }}
+{{- end }}
 {{- if .Values.configMap.create }}
 ---
 apiVersion: v1

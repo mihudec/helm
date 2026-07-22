@@ -55,7 +55,11 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{- define "vector.envSecretName" -}}
+{{- if .Values.envSecret.existingName -}}
+{{- .Values.envSecret.existingName -}}
+{{- else -}}
 {{- printf "%s-env-secrets" (include "vector.fullname" .) | trunc 63 | trimSuffix "-" }}
+{{- end -}}
 {{- end }}
 
 {{- define "vector.configMapName" -}}
