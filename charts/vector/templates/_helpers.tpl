@@ -59,13 +59,25 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{- define "vector.configMapName" -}}
+{{- if .Values.configMap.existingName -}}
+{{- .Values.configMap.existingName -}}
+{{- else -}}
 {{- printf "%s-config" (include "vector.fullname" .) | trunc 63 | trimSuffix "-" }}
+{{- end -}}
 {{- end }}
 
 {{- define "vector.scriptsConfigMapName" -}}
+{{- if .Values.scriptsConfigMap.existingName -}}
+{{- .Values.scriptsConfigMap.existingName -}}
+{{- else -}}
 {{- printf "%s-scripts" (include "vector.fullname" .) | trunc 63 | trimSuffix "-" }}
+{{- end -}}
 {{- end }}
 
 {{- define "vector.enrichmentsConfigMapName" -}}
+{{- if .Values.enrichmentsConfigMap.existingName -}}
+{{- .Values.enrichmentsConfigMap.existingName -}}
+{{- else -}}
 {{- printf "%s-enrichments" (include "vector.fullname" .) | trunc 63 | trimSuffix "-" }}
+{{- end -}}
 {{- end }}

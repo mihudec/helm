@@ -16,6 +16,7 @@ metadata:
 type: Opaque
 data:
   {{- toYaml .Values.secretEnv | nindent 2 }}
+{{- if .Values.configMap.create }}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -25,6 +26,8 @@ metadata:
     {{- include "vector.labels" . | nindent 4 }}
 data:
   {{- toYaml .Values.config | nindent 2 }}
+{{- end }}
+{{- if .Values.scriptsConfigMap.create }}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -34,6 +37,8 @@ metadata:
     {{- include "vector.labels" . | nindent 4 }}
 data:
   {{- toYaml .Values.scripts | nindent 2 }}
+{{- end }}
+{{- if .Values.enrichmentsConfigMap.create }}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -43,3 +48,4 @@ metadata:
     {{- include "vector.labels" . | nindent 4 }}
 data:
   {{- toYaml .Values.enrichments | nindent 2 }}
+{{- end }}
