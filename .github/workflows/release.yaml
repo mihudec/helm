@@ -23,6 +23,14 @@ jobs:
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
 
+      - name: Ensure gh-pages branch exists
+        run: |
+          if ! git ls-remote --exit-code --heads origin gh-pages > /dev/null; then
+            empty_tree="$(git hash-object -t tree /dev/null)"
+            commit="$(git commit-tree "$empty_tree" -m "Initialize gh-pages branch")"
+            git push origin "$commit:refs/heads/gh-pages"
+          fi
+
       - name: Release charts
         uses: helm/chart-releaser-action@v1.7.0
         env:
