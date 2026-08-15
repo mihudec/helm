@@ -86,6 +86,9 @@ envConfig:
   VECTOR_CONFIG_DIR: /vector/config
   VECTOR_SCRIPTS_DIR: /vector/scripts
   VECTOR_ENRICHMENTS_DIR: /vector/enrichments
+  # Vector 0.57+ disables configuration environment-variable interpolation by default.
+  # Enable it only when trusted configuration files intentionally use `${VAR}` expressions.
+  # VECTOR_DANGEROUSLY_ALLOW_ENV_VAR_INTERPOLATION: "true"
 
 # -- Secret containing environment variables loaded into the Vector container with `envFrom`.
 envSecret:
@@ -131,8 +134,9 @@ config:
       enabled: true
       address: "0.0.0.0:8686"
 
-    # Use the TZ environment variable, falling back to the container's local timezone.
-    timezone: "${TZ:-local}"
+    # `local` uses the process timezone configured by the TZ environment variable.
+    # This avoids Vector 0.57's disabled-by-default configuration interpolation.
+    timezone: "local"
 
 # -- ConfigMap containing automatically namespaced Vector source files.
 sourcesConfigMap:
