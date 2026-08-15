@@ -70,6 +70,30 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
 {{- end }}
 
+{{- define "vector.sourcesConfigMapName" -}}
+{{- if .Values.sourcesConfigMap.existingName -}}
+{{- .Values.sourcesConfigMap.existingName -}}
+{{- else -}}
+{{- printf "%s-sources" (include "vector.fullname" .) | trunc 63 | trimSuffix "-" }}
+{{- end -}}
+{{- end }}
+
+{{- define "vector.transformsConfigMapName" -}}
+{{- if .Values.transformsConfigMap.existingName -}}
+{{- .Values.transformsConfigMap.existingName -}}
+{{- else -}}
+{{- printf "%s-transforms" (include "vector.fullname" .) | trunc 63 | trimSuffix "-" }}
+{{- end -}}
+{{- end }}
+
+{{- define "vector.sinksConfigMapName" -}}
+{{- if .Values.sinksConfigMap.existingName -}}
+{{- .Values.sinksConfigMap.existingName -}}
+{{- else -}}
+{{- printf "%s-sinks" (include "vector.fullname" .) | trunc 63 | trimSuffix "-" }}
+{{- end -}}
+{{- end }}
+
 {{- define "vector.scriptsConfigMapName" -}}
 {{- if .Values.scriptsConfigMap.existingName -}}
 {{- .Values.scriptsConfigMap.existingName -}}

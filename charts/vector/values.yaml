@@ -54,6 +54,24 @@ config:
       address: "0.0.0.0:8686"
     timezone: "${TZ:-local}"
 
+sourcesConfigMap:
+  create: true
+  existingName: ""
+
+sources: {}
+
+transformsConfigMap:
+  create: true
+  existingName: ""
+
+transforms: {}
+
+sinksConfigMap:
+  create: true
+  existingName: ""
+
+sinks: {}
+
 scriptsConfigMap:
   create: true
   existingName: ""

@@ -1,0 +1,22 @@
+sources:
+  demo.yaml: |
+    type: demo_logs
+    format: json
+    interval: 1
+
+transforms:
+  add-demo-field.yaml: |
+    type: remap
+    inputs:
+      - demo
+    source: |
+      .demo = true
+
+sinks:
+  console.yaml: |
+    type: console
+    inputs:
+      - add-demo-field
+    target: stdout
+    encoding:
+      codec: json

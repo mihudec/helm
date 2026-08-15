@@ -77,12 +77,21 @@ spec:
             initialDelaySeconds: 5
             periodSeconds: 10
           volumeMounts:
-            - mountPath: /vector/config
+            - mountPath: /vector/config/vector.yaml
               name: config
+              subPath: vector.yaml
+            - mountPath: /vector/config/sources
+              name: sources
+            - mountPath: /vector/config/transforms
+              name: transforms
+            - mountPath: /vector/config/sinks
+              name: sinks
             - mountPath: /vector/scripts
               name: scripts
             - mountPath: /vector/enrichments
               name: enrichments
+            - mountPath: /var/lib/vector
+              name: data
             {{- with .Values.volumeMounts }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
@@ -90,12 +99,23 @@ spec:
         - name: config
           configMap:
             name: {{ include "vector.configMapName" . }}
+        - name: sources
+          configMap:
+            name: {{ include "vector.sourcesConfigMapName" . }}
+        - name: transforms
+          configMap:
+            name: {{ include "vector.transformsConfigMapName" . }}
+        - name: sinks
+          configMap:
+            name: {{ include "vector.sinksConfigMapName" . }}
         - name: scripts
           configMap:
             name: {{ include "vector.scriptsConfigMapName" . }}
         - name: enrichments
           configMap:
             name: {{ include "vector.enrichmentsConfigMapName" . }}
+        - name: data
+          emptyDir: {}
         {{- with .Values.volumes }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
