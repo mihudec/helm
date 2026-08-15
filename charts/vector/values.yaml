@@ -1,97 +1,281 @@
+# -- Number of Vector pods to run.
 replicaCount: 1
 
+# -- Deployment update strategy.
 strategy:
+  # -- Strategy type. Common values are `RollingUpdate` and `Recreate`.
   type: RollingUpdate
   rollingUpdate:
+    # -- Maximum unavailable pods during an update. Accepts a number or percentage.
     maxUnavailable: 0
+    # -- Maximum additional pods during an update. Accepts a number or percentage.
     maxSurge: 1
 
+# -- Vector container image settings.
 image:
+  # -- Container image repository.
   repository: timberio/vector
+  # -- Container image tag.
   tag: 0.57.0-debian
+  # -- Kubernetes image pull policy.
   pullPolicy: IfNotPresent
 
+# -- Image pull secrets for private registries.
+# @default -- `[]`
+# Example:
+# imagePullSecrets:
+#   - name: registry-credentials
 imagePullSecrets: []
+
+# -- Override the chart name used in generated resource names.
 nameOverride: ""
+# -- Override the complete generated resource name.
 fullnameOverride: ""
 
+# -- Additional annotations applied to the Vector pod.
+# Example:
+# podAnnotations:
+#   prometheus.io/scrape: "true"
+#   prometheus.io/port: "8686"
 podAnnotations: {}
+
+# -- Additional labels applied to the Vector pod.
+# Example:
+# podLabels:
+#   environment: production
 podLabels: {}
 
+# -- Pod-level security context.
+# Example:
+# podSecurityContext:
+#   fsGroup: 1000
+#   runAsNonRoot: true
 podSecurityContext: {}
+
+# -- Container-level security context.
+# Ensure that the selected image supports any configured user or filesystem restrictions.
+# Example:
+# securityContext:
+#   allowPrivilegeEscalation: false
+#   capabilities:
+#     drop:
+#       - ALL
+#   readOnlyRootFilesystem: true
 securityContext: {}
 
+# -- Container resource requests and limits.
+# Example:
+# resources:
+#   requests:
+#     cpu: 100m
+#     memory: 128Mi
+#   limits:
+#     cpu: 500m
+#     memory: 512Mi
 resources: {}
 
+# -- Environment variables set directly on the Vector container.
+# Values are rendered as strings. These override variables with the same name from `envConfig`.
 env:
   TZ: Europe/Prague
+  # LOG: info
 
+# -- Non-sensitive environment variables stored in a generated ConfigMap and loaded with `envFrom`.
+# These paths describe where the chart mounts Vector configuration, scripts, and enrichment data.
 envConfig:
   VECTOR_CONFIG_DIR: /vector/config
   VECTOR_SCRIPTS_DIR: /vector/scripts
   VECTOR_ENRICHMENTS_DIR: /vector/enrichments
 
+# -- Secret containing environment variables loaded into the Vector container with `envFrom`.
 envSecret:
+  # -- Create the Secret from `secretEnv` and `secretEnvData`.
   create: true
+  # -- Use an existing Secret instead of the generated name. Set `create` to `false` when using it.
   existingName: ""
 
+# -- Plain-text values written to the generated Secret's `stringData` field.
+# Kubernetes performs the base64 encoding. Avoid committing real credentials to values files.
+# Example:
+# secretEnv:
+#   API_TOKEN: plain-text-token
+#   HTTP_PASSWORD: plain-text-password
 secretEnv: {}
+
+# -- Pre-encoded values written to the generated Secret's `data` field.
+# Every value must already be base64-encoded; do not encode values used in `secretEnv`.
+# Example (`printf %s 'plain-text-token' | base64`):
+# secretEnvData:
+#   API_TOKEN: cGxhaW4tdGV4dC10b2tlbg==
 secretEnvData: {}
 
+# -- ConfigMap containing the root Vector configuration file.
 configMap:
+  # -- Create the ConfigMap from `config`.
   create: true
+  # -- Use an existing ConfigMap instead of the generated name. It must contain `vector.yaml`.
+  # Set `create` to `false` when using it.
   existingName: ""
 
+# -- Root Vector configuration. The `vector.yaml` key is mounted at
+# `/vector/config/vector.yaml`. Component definitions can be split into the
+# dedicated `sources`, `transforms`, and `sinks` values below.
 config:
   vector.yaml: |
-    # Set global options
+    # Vector persists checkpoints and buffer data here. The chart mounts an
+    # ephemeral `emptyDir` at this path.
     data_dir: "/var/lib/vector"
 
-    # Vector's API
     # Enabled for Kubernetes health probes and `vector top`.
     api:
       enabled: true
       address: "0.0.0.0:8686"
+
+    # Use the TZ environment variable, falling back to the container's local timezone.
     timezone: "${TZ:-local}"
 
+# -- ConfigMap containing automatically namespaced Vector source files.
 sourcesConfigMap:
+  # -- Create the ConfigMap from `sources`.
   create: true
+  # -- Use an existing ConfigMap instead of the generated name. Set `create` to `false` when using it.
   existingName: ""
 
+# -- Vector source configuration files mounted under `/vector/config/sources`.
+# The key becomes the filename and its basename becomes the Vector component ID,
+# so each file contains one component without a surrounding `sources:` mapping.
+# Example:
+# sources:
+#   demo.yaml: |
+#     type: demo_logs
+#     format: json
+#     interval: 1
 sources: {}
 
+# -- ConfigMap containing automatically namespaced Vector transform files.
 transformsConfigMap:
+  # -- Create the ConfigMap from `transforms`.
   create: true
+  # -- Use an existing ConfigMap instead of the generated name. Set `create` to `false` when using it.
   existingName: ""
 
+# -- Vector transform configuration files mounted under `/vector/config/transforms`.
+# The key becomes the filename and its basename becomes the Vector component ID.
+# Example:
+# transforms:
+#   add-environment.yaml: |
+#     type: remap
+#     inputs:
+#       - demo
+#     source: |
+#       .environment = "demo"
 transforms: {}
 
+# -- ConfigMap containing automatically namespaced Vector sink files.
 sinksConfigMap:
+  # -- Create the ConfigMap from `sinks`.
   create: true
+  # -- Use an existing ConfigMap instead of the generated name. Set `create` to `false` when using it.
   existingName: ""
 
+# -- Vector sink configuration files mounted under `/vector/config/sinks`.
+# The key becomes the filename and its basename becomes the Vector component ID.
+# Example:
+# sinks:
+#   console.yaml: |
+#     type: console
+#     inputs:
+#       - add-environment
+#     target: stdout
+#     encoding:
+#       codec: json
 sinks: {}
 
+# -- ConfigMap containing files made available to Vector-related scripts.
 scriptsConfigMap:
+  # -- Create the ConfigMap from `scripts`.
   create: true
+  # -- Use an existing ConfigMap instead of the generated name. Set `create` to `false` when using it.
   existingName: ""
 
+# -- Script files mounted under `/vector/scripts`.
+# Example:
+# scripts:
+#   healthcheck.sh: |
+#     #!/bin/sh
+#     echo healthy
 scripts: {}
 
+# -- ConfigMap containing enrichment data files.
 enrichmentsConfigMap:
+  # -- Create the ConfigMap from `enrichments`.
   create: true
+  # -- Use an existing ConfigMap instead of the generated name. Set `create` to `false` when using it.
   existingName: ""
 
+# -- Enrichment files mounted under `/vector/enrichments`.
+# Example:
+# enrichments:
+#   users.csv: |
+#     id,name
+#     1,Alice
+#     2,Bob
 enrichments: {}
 
+# -- Additional Kubernetes volume mounts for the Vector container.
+# Every entry must reference a volume declared in `volumes`.
+# Example:
+# volumeMounts:
+#   - name: host-logs
+#     mountPath: /host/var/log
+#     readOnly: true
 volumeMounts: []
+
+# -- Additional Kubernetes volumes added to the pod.
+# Example:
+# volumes:
+#   - name: host-logs
+#     hostPath:
+#       path: /var/log
+#       type: Directory
 volumes: []
 
+# -- Node selector labels used to place Vector pods.
+# Example:
+# nodeSelector:
+#   kubernetes.io/os: linux
 nodeSelector: {}
+
+# -- Kubernetes tolerations applied to Vector pods.
+# Example:
+# tolerations:
+#   - key: dedicated
+#     operator: Equal
+#     value: observability
+#     effect: NoSchedule
 tolerations: []
+
+# -- Complete Kubernetes affinity configuration. When non-empty, this replaces
+# the simplified `podAntiAffinity` configuration below.
+# Example:
+# affinity:
+#   nodeAffinity:
+#     requiredDuringSchedulingIgnoredDuringExecution:
+#       nodeSelectorTerms:
+#         - matchExpressions:
+#             - key: kubernetes.io/os
+#               operator: In
+#               values:
+#                 - linux
 affinity: null
+
+# -- Simplified anti-affinity between replicas. Used only when `affinity` is empty.
 podAntiAffinity:
+  # -- Enable the generated pod anti-affinity rule.
   enabled: true
+  # -- Rule strength: `required` creates a hard rule; any other value creates a preferred rule.
   type: preferred
+  # -- Preference weight from 1 to 100. Used only when `type` is not `required`.
   weight: 100
+  # -- Node label defining the topology domain across which replicas are spread.
   topologyKey: kubernetes.io/hostname
