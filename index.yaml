@@ -3,6 +3,16 @@ entries:
   vector:
   - apiVersion: v2
     appVersion: 0.57.0-debian
+    created: "2026-08-16T19:28:51.498484364Z"
+    description: Minimal Vector deployment
+    digest: b1bc476af0435c7f5f6e4f7ad51c4fc110df66faf878724f18c039ed1f7cdb76
+    name: vector
+    type: application
+    urls:
+    - https://github.com/mihudec/helm/releases/download/vector-0.3.0/vector-0.3.0.tgz
+    version: 0.3.0
+  - apiVersion: v2
+    appVersion: 0.57.0-debian
     created: "2026-08-15T19:14:22.76316628Z"
     description: Minimal Vector deployment
     digest: dd7456650afd18a0a3d9136d55ed48d7f21ed0fd638c74238d0c2b2142d34e98
@@ -71,4 +81,4 @@ entries:
     urls:
     - https://github.com/mihudec/helm/releases/download/vector-0.1.0-alpha1/vector-0.1.0-alpha1.tgz
     version: 0.1.0-alpha1
-generated: "2026-08-15T19:14:22.763185876Z"
+generated: "2026-08-16T19:28:51.498517424Z"
