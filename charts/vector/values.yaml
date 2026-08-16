@@ -74,6 +74,53 @@ securityContext: {}
 #     memory: 512Mi
 resources: {}
 
+# -- Named ports declared on the Vector container. Declaring a port does not
+# make Vector listen on it; the corresponding Vector API or source must bind to
+# the same port. Map keys become Kubernetes port names and must be unique.
+# Example:
+# containerPorts:
+#   vector-in:
+#     containerPort: 6000
+#     protocol: TCP
+#   syslog-udp:
+#     containerPort: 514
+#     protocol: UDP
+containerPorts:
+  api:
+    containerPort: 8686
+    protocol: TCP
+
+# -- Kubernetes Service configuration.
+service:
+  # -- Create a Service selecting the Vector pods. Disabled by default because
+  # the default port exposes Vector's unauthenticated API.
+  enabled: false
+  # -- Kubernetes Service type, such as `ClusterIP`, `NodePort`, or `LoadBalancer`.
+  type: ClusterIP
+  # -- Additional annotations applied to the Service.
+  # Example:
+  # annotations:
+  #   service.beta.kubernetes.io/aws-load-balancer-type: nlb
+  annotations: {}
+  # -- Additional labels applied to the Service.
+  # Example:
+  # labels:
+  #   exposure: internal
+  labels: {}
+  # -- Named Service ports. Map keys become Service port names. Prefer a named
+  # `targetPort` matching a key in `containerPorts`.
+  # Example:
+  # ports:
+  #   vector-in:
+  #     port: 6000
+  #     targetPort: vector-in
+  #     protocol: TCP
+  ports:
+    api:
+      port: 8686
+      targetPort: api
+      protocol: TCP
+
 # -- Environment variables set directly on the Vector container.
 # Values are rendered as strings. These override variables with the same name from `envConfig`.
 env:

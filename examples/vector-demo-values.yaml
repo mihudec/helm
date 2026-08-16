@@ -20,3 +20,31 @@ sinks:
     target: stdout
     encoding:
       codec: json
+containerPorts:
+  syslog-udp:
+    protocol: UDP
+    containerPort: 6514
+  syslog-tcp:
+    protocol: TCP
+    containerPort: 6514
+
+service:
+  enabled: true
+  ports:
+    syslog-udp:
+      port: 6514
+      targetPort: syslog-udp
+      protocol: UDP
+    syslog-tcp:
+      port: 6514
+      targetPort: syslog-tcp
+      protocol: TCP
+
+volumes:
+  - name: certs
+    configMap:
+      name: vector-demo-certs
+
+volumeMounts:
+  - mountPath: /vector/certs
+    name: certs

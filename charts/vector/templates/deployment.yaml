@@ -44,10 +44,13 @@ spec:
           args:
             - "--config-dir"
             - "/vector/config"
+          {{- with .Values.containerPorts }}
           ports:
-            - name: api
-              containerPort: 8686
-              protocol: TCP
+            {{- range $name, $port := . }}
+            - name: {{ $name }}
+              {{- toYaml $port | nindent 14 }}
+            {{- end }}
+          {{- end }}
           envFrom:
             - configMapRef:
                 name: {{ include "vector.envConfigMapName" . }}
