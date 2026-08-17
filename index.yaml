@@ -3,6 +3,16 @@ entries:
   telegraf:
   - apiVersion: v2
     appVersion: "1.37"
+    created: "2026-08-17T19:12:33.593393808Z"
+    description: Minimal Telegraf workload using an external configuration ConfigMap
+    digest: 4aa60cbf9bbe65cd50367e90cc746515e3bfab646e8f246b5615bd8b1532c7a4
+    name: telegraf
+    type: application
+    urls:
+    - https://github.com/mihudec/helm/releases/download/telegraf-0.2.0/telegraf-0.2.0.tgz
+    version: 0.2.0
+  - apiVersion: v2
+    appVersion: "1.37"
     created: "2026-08-17T17:36:46.039249469Z"
     description: Minimal Telegraf deployment using an external configuration ConfigMap
     digest: 2a93af40ed4f08fc2df58f541c4b97b25cdd9481dc382d8f2e6b08c7dac6f970
@@ -102,4 +112,4 @@ entries:
     urls:
     - https://github.com/mihudec/helm/releases/download/vector-0.1.0-alpha1/vector-0.1.0-alpha1.tgz
     version: 0.1.0-alpha1
-generated: "2026-08-17T17:36:46.039282819Z"
+generated: "2026-08-17T19:12:33.593429481Z"
