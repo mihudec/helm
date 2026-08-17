@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: telegraf-kubernetes-config
+data:
+  telegraf.conf: |
+    [agent]
+      interval = "10s"
+      hostname = "${NODE_NAME}"
+
+    [[inputs.kubernetes]]
+      url = "https://${NODE_IP}:10250"
+      bearer_token = "/var/run/secrets/kubernetes.io/serviceaccount/token"
+
+      # Kubelet serving certificates are not always signed by the cluster CA.
+      # Prefer configuring a trusted CA when the cluster provides one.
+      insecure_skip_verify = true
+
+    [[outputs.file]]
+      files = ["stdout"]
+      data_format = "json"

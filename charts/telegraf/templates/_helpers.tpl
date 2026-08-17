@@ -59,3 +59,12 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- required "envSecret.existingName is required when envSecret.create is false" .Values.envSecret.existingName -}}
 {{- end -}}
 {{- end }}
+
+{{/* ServiceAccount used by the Telegraf pods. */}}
+{{- define "telegraf.serviceAccountName" -}}
+{{- if .Values.serviceAccount.create -}}
+{{- default (include "telegraf.fullname" .) .Values.serviceAccount.name -}}
+{{- else -}}
+{{- default "default" .Values.serviceAccount.name -}}
+{{- end -}}
+{{- end }}

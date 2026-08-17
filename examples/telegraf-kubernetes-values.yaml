@@ -1,0 +1,15 @@
+workloadKind: DaemonSet
+
+configMap:
+  name: telegraf-kubernetes-config
+
+serviceAccount:
+  create: true
+  automountServiceAccountToken: true
+
+rbac:
+  create: true
+
+# Add tolerations here if Telegraf should also run on tainted control-plane or
+# dedicated nodes.
+tolerations: []

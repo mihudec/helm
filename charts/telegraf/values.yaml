@@ -1,12 +1,24 @@
-# -- Number of Telegraf pods to run.
+# -- Workload controller used to run Telegraf. Use `DaemonSet` to collect
+# kubelet or host metrics from every eligible Kubernetes node.
+workloadKind: Deployment
+
+# -- Number of Telegraf pods to run when `workloadKind` is `Deployment`.
 replicaCount: 1
 
-# -- Deployment update strategy.
+# -- Update strategy used when `workloadKind` is `Deployment`.
 strategy:
   type: RollingUpdate
   rollingUpdate:
     maxUnavailable: 0
     maxSurge: 1
+
+# -- Settings used when `workloadKind` is `DaemonSet`.
+daemonSet:
+  # -- DaemonSet update strategy.
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
 
 # -- Telegraf container image settings.
 image:
@@ -24,6 +36,35 @@ imagePullSecrets: []
 nameOverride: ""
 # -- Override the complete generated resource name.
 fullnameOverride: ""
+
+# -- ServiceAccount used by Telegraf.
+serviceAccount:
+  # -- Create a dedicated ServiceAccount. Enable this together with
+  # `rbac.create` for Kubernetes node metrics.
+  create: false
+  # -- Existing ServiceAccount name when `create` is false. An empty value uses
+  # the namespace's `default` ServiceAccount.
+  name: ""
+  # -- Additional annotations applied to a generated ServiceAccount.
+  annotations: {}
+  # -- Mount the Kubernetes API token into the pod. The secure kubelet endpoint
+  # needs this token when using `inputs.kubernetes`.
+  automountServiceAccountToken: true
+
+# -- Optional cluster-wide permissions for Kubernetes node metrics.
+rbac:
+  # -- Create a ClusterRole and ClusterRoleBinding for the selected ServiceAccount.
+  create: false
+  # -- ClusterRole rules. The default grants only the kubelet Summary API
+  # permission required by `/stats/summary`; it intentionally excludes the
+  # much broader `nodes/proxy` permission.
+  rules:
+    - apiGroups:
+        - ""
+      resources:
+        - nodes/stats
+      verbs:
+        - get
 
 # -- Arguments passed to Telegraf. `--unprotected` disables the plugin
 # protection mechanism and matches the source Deployment.
@@ -121,8 +162,8 @@ service:
   #     protocol: UDP
   ports: {}
 
-# -- Direct string environment variables. `NODE_NAME` is always populated from
-# `spec.nodeName` separately and should not be repeated here.
+# -- Direct string environment variables. `NODE_NAME` and `NODE_IP` are always
+# populated from the downward API and should not be repeated here.
 # Example:
 # env:
 #   HOST_ETC: /hostfs/etc
@@ -192,8 +233,16 @@ volumeMounts: []
 #       type: Directory
 volumes: []
 
-# -- Pod DNS policy.
+# -- Share the node network namespace. This is not required for kubelet
+# collection through `NODE_IP`, but is available for host-network use cases.
+hostNetwork: false
+
+# -- Pod DNS policy. Use `ClusterFirstWithHostNet` when `hostNetwork` is true
+# and cluster service discovery is still required.
 dnsPolicy: ClusterFirst
+
+# -- Optional custom pod DNS configuration.
+dnsConfig: {}
 
 # -- Grace period before Kubernetes forcefully stops Telegraf.
 terminationGracePeriodSeconds: 30

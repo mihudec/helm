@@ -1,14 +1,24 @@
+{{- if not (has .Values.workloadKind (list "Deployment" "DaemonSet")) }}
+{{- fail "workloadKind must be either Deployment or DaemonSet" }}
+{{- end }}
 apiVersion: apps/v1
-kind: Deployment
+kind: {{ .Values.workloadKind }}
 metadata:
   name: {{ include "telegraf.fullname" . }}
   labels:
     {{- include "telegraf.labels" . | nindent 4 }}
 spec:
+  {{- if eq .Values.workloadKind "Deployment" }}
   replicas: {{ .Values.replicaCount }}
   {{- with .Values.strategy }}
   strategy:
     {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- else }}
+  {{- with .Values.daemonSet.updateStrategy }}
+  updateStrategy:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   {{- end }}
   selector:
     matchLabels:
@@ -25,6 +35,8 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
+      serviceAccountName: {{ include "telegraf.serviceAccountName" . }}
+      automountServiceAccountToken: {{ .Values.serviceAccount.automountServiceAccountToken }}
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
@@ -71,6 +83,11 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: spec.nodeName
+            - name: NODE_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.hostIP
             {{- range $name, $value := .Values.env }}
             - name: {{ $name }}
               value: {{ $value | quote }}
@@ -98,7 +115,12 @@ spec:
             {{- with .Values.volumeMounts }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
+      hostNetwork: {{ .Values.hostNetwork }}
       dnsPolicy: {{ .Values.dnsPolicy }}
+      {{- with .Values.dnsConfig }}
+      dnsConfig:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       restartPolicy: Always
       terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
       volumes:
