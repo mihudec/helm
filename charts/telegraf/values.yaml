@@ -1,0 +1,217 @@
+# -- Number of Telegraf pods to run.
+replicaCount: 1
+
+# -- Deployment update strategy.
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxUnavailable: 0
+    maxSurge: 1
+
+# -- Telegraf container image settings.
+image:
+  repository: telegraf
+  tag: "1.37"
+  pullPolicy: IfNotPresent
+
+# -- Image pull secrets for private registries.
+# Example:
+# imagePullSecrets:
+#   - name: registry-credentials
+imagePullSecrets: []
+
+# -- Override the chart name used in generated resource names.
+nameOverride: ""
+# -- Override the complete generated resource name.
+fullnameOverride: ""
+
+# -- Arguments passed to Telegraf. `--unprotected` disables the plugin
+# protection mechanism and matches the source Deployment.
+args:
+  - --unprotected
+
+# -- Optional command overriding the image entrypoint.
+command: []
+
+# -- ConfigMap that already contains the Telegraf configuration. This chart
+# deliberately does not create it.
+configMap:
+  # -- Name of the existing ConfigMap.
+  name: telegraf-config
+  # -- ConfigMap key containing the configuration.
+  key: telegraf.conf
+  # -- File path at which the key is mounted with `subPath`.
+  mountPath: /etc/telegraf/telegraf.conf
+  # -- File mode expressed as a decimal number; 420 is octal 0644.
+  defaultMode: 420
+
+# -- Additional annotations applied to the Telegraf pod.
+# Example:
+# podAnnotations:
+#   prometheus.io/scrape: "true"
+podAnnotations: {}
+
+# -- Additional labels applied to the Telegraf pod.
+# Example:
+# podLabels:
+#   environment: production
+podLabels: {}
+
+# -- Pod-level security context. Telegraf runs as a numeric non-root user and
+# group because the upstream image otherwise starts as root. The runtime-default
+# seccomp profile remains compatible with native ping.
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  seccompProfile:
+    type: RuntimeDefault
+
+# -- Additional init containers run before Telegraf starts. Volume mounts must
+# reference either the built-in `config` volume or an entry in `volumes`.
+# Example:
+# initContainers:
+#   - name: wait-for-endpoint
+#     image: busybox:1.36
+#     command: ["sh", "-c", "until nc -z metrics-db 8086; do sleep 2; done"]
+initContainers: []
+
+# -- Telegraf container security context. Native `inputs.ping` opens raw ICMP
+# sockets, so it needs `NET_RAW` even when Telegraf runs as a non-root user.
+# `NET_BIND_SERVICE` is not needed unless Telegraf listens below port 1024.
+# Note that Kubernetes' Restricted Pod Security Standard does not permit
+# `NET_RAW`; namespaces enforcing that profile will reject this pod.
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+    add:
+      - NET_RAW
+
+# -- Container resource requests and limits.
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+# -- Named ports declared on the Telegraf container. A Telegraf input must
+# listen on the corresponding port. Map keys become Kubernetes port names.
+# Example:
+# containerPorts:
+#   statsd:
+#     containerPort: 8125
+#     protocol: UDP
+containerPorts: {}
+
+# -- Optional Service configuration for network-based Telegraf inputs.
+service:
+  enabled: false
+  type: ClusterIP
+  annotations: {}
+  labels: {}
+  # Example:
+  # ports:
+  #   statsd:
+  #     port: 8125
+  #     targetPort: statsd
+  #     protocol: UDP
+  ports: {}
+
+# -- Direct string environment variables. `NODE_NAME` is always populated from
+# `spec.nodeName` separately and should not be repeated here.
+# Example:
+# env:
+#   HOST_ETC: /hostfs/etc
+env: {}
+
+# -- Additional raw Kubernetes environment entries, including `valueFrom`.
+# Example:
+# extraEnv:
+#   - name: POD_NAME
+#     valueFrom:
+#       fieldRef:
+#         fieldPath: metadata.name
+extraEnv: []
+
+# -- ConfigMap loaded with `envFrom`.
+envConfigMap:
+  # -- Create the ConfigMap from `envConfig`.
+  create: true
+  # -- Existing ConfigMap name. Set `create` to false when using it.
+  existingName: ""
+
+# -- Non-sensitive environment variables written to the generated ConfigMap.
+envConfig: {}
+
+# -- Secret loaded with `envFrom`.
+envSecret:
+  # -- Create the Secret from `secretEnv` and `secretEnvData`.
+  create: true
+  # -- Existing Secret name. Set `create` to false when using it.
+  existingName: ""
+
+# -- Plain-text values written to the generated Secret's `stringData` field.
+# Avoid committing real credentials to values files.
+# Example:
+# secretEnv:
+#   INFLUX_TOKEN: plain-text-token
+secretEnv: {}
+
+# -- Pre-encoded values written to the generated Secret's `data` field.
+# Example:
+# secretEnvData:
+#   INFLUX_TOKEN: cGxhaW4tdGV4dC10b2tlbg==
+secretEnvData: {}
+
+# -- Optional raw Kubernetes liveness probe. No default is provided because
+# Telegraf does not expose a universal health endpoint.
+livenessProbe: {}
+
+# -- Optional raw Kubernetes readiness probe.
+readinessProbe: {}
+
+# -- Additional volume mounts for the Telegraf container. Every item must
+# reference an entry in `volumes`.
+# Example:
+# volumeMounts:
+#   - name: host-proc
+#     mountPath: /hostfs/proc
+#     readOnly: true
+volumeMounts: []
+
+# -- Additional Kubernetes pod volumes. No SNMP MIB hostPath is included.
+# Example:
+# volumes:
+#   - name: host-proc
+#     hostPath:
+#       path: /proc
+#       type: Directory
+volumes: []
+
+# -- Pod DNS policy.
+dnsPolicy: ClusterFirst
+
+# -- Grace period before Kubernetes forcefully stops Telegraf.
+terminationGracePeriodSeconds: 30
+
+# -- Node selector labels used to place Telegraf pods.
+nodeSelector: {}
+
+# -- Kubernetes tolerations applied to Telegraf pods.
+tolerations: []
+
+# -- Complete Kubernetes affinity configuration. When non-empty, this replaces
+# the simplified `podAntiAffinity` configuration below.
+affinity: null
+
+# -- Simplified anti-affinity between replicas. Used only when `affinity` is empty.
+podAntiAffinity:
+  enabled: true
+  # -- `required` creates a hard rule; any other value creates a preferred rule.
+  type: preferred
+  weight: 100
+  topologyKey: kubernetes.io/hostname

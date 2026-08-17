@@ -1,0 +1,11 @@
+# This ConfigMap is created separately; see telegraf-configmap.yaml.
+configMap:
+  name: telegraf-config
+
+envConfig:
+  ENVIRONMENT: demo
+
+# Store real credentials in an external Secret instead of this example.
+envSecret:
+  create: false
+  existingName: telegraf-secrets

@@ -1,0 +1,24 @@
+{{- if .Values.service.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "telegraf.fullname" . }}
+  labels:
+    {{- include "telegraf.labels" . | nindent 4 }}
+    {{- with .Values.service.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    {{- include "telegraf.selectorLabels" . | nindent 4 }}
+  ports:
+    {{- range $name, $port := .Values.service.ports }}
+    - name: {{ $name }}
+      {{- toYaml $port | nindent 6 }}
+    {{- end }}
+{{- end }}
