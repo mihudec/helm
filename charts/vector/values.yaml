@@ -52,6 +52,20 @@ podLabels: {}
 #   runAsNonRoot: true
 podSecurityContext: {}
 
+# -- Additional init containers to run before Vector starts. These accept the
+# standard Kubernetes Container fields. Volumes referenced here must either be
+# one of the chart's built-in volumes (such as `data`) or be declared below in
+# `volumes`.
+# Example:
+# initContainers:
+#   - name: prepare-data
+#     image: busybox:1.36
+#     command: ["sh", "-c", "echo ready > /work/ready"]
+#     volumeMounts:
+#       - name: work
+#         mountPath: /work
+initContainers: []
+
 # -- Container-level security context.
 # Ensure that the selected image supports any configured user or filesystem restrictions.
 # Example:
